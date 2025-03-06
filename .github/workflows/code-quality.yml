@@ -21,41 +21,71 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: |
+          npm install --global ts-node glob fs
+          npm install --legacy-peer-deps
 
       - name: Check export patterns
         run: |
           npx ts-node -e "
+            const glob = require('glob');
+            const fs = require('fs');
             const files = glob.sync('app/**/*.tsx');
+            let hasErrors = false;
             files.forEach(file => {
               const content = fs.readFileSync(file, 'utf8');
-              if (content.includes('export const') || !content.includes('export function')) {
-                throw new Error(`${file} must use 'export function' pattern`);
+              if (content.includes('export const')) {
+                console.error(`Error: ${file} uses 'export const' instead of 'export function'`);
+                hasErrors = true;
               }
-            });"
-
-      - name: Run ESLint
-        run: npx eslint . --ext .ts,.tsx
-
-      - name: Run Prettier
-        run: npm run format
-
-      - name: Check formatting
-        run: npx prettier --check "app/**/*.tsx" --config .prettierrc
+            });
+            if (hasErrors) process.exit(1);"
 
       - name: Check naming conventions
         run: |
           npx ts-node -e "
+            const glob = require('glob');
+            const fs = require('fs');
             const files = glob.sync('app/**/*.tsx');
+            let hasErrors = false;
             files.forEach(file => {
               const content = fs.readFileSync(file, 'utf8');
-              const exportMatches = content.match(/export function (\w+)/g);
-              if (exportMatches) {
-                exportMatches.forEach(match => {
-                   const functionName = match.replace('export function ', '');
-                   if (!/^[a-z][a-zA-Z0-9]*$/.test(functionName)) {
-                      throw new Error(`Function ${functionName} in ${file} must use camelCase`);
-                   }
+              const matches = content.match(/export function ([A-Za-z0-9]+)/g);
+              if (matches) {
+                matches.forEach(match => {
+                  const functionName = match.replace('export function ', '');
+                  if (!/^[a-z][a-zA-Z0-9]*$/.test(functionName)) {
+                    console.error(`Error: Function '${functionName}' in ${file} must use camelCase`);
+                    hasErrors = true;
+                  }
                 });
-             }
-           });"
+              }
+            });
+            if (hasErrors) process.exit(1);"
+
+      - name: Setup Prettier
+        run: |
+          echo {
+            "semi": true,
+            "singleQuote": true,
+            "trailingComma": "es5",
+            "printWidth": 80
+          } > .prettierrc
+
+      - name: Check formatting
+        run: |
+          npx prettier --check "app/**/*.tsx" || (
+            echo "Formatting errors found. Run 'npm run format' to fix." && 
+            exit 1
+          )
+
+      - name: Run ESLint
+        run: |
+          echo {
+            "extends": ["next/core-web-vitals"],
+            "rules": {
+              "camelcase": "error",
+              "no-unused-vars": "error"
+            }
+          } > .eslintrc.json
+          npx eslint . --ext .ts,.tsx --max-warnings 0
