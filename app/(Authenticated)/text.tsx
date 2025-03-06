@@ -1,54 +1,28 @@
-// Bad examples that should fail checks
-export function BadExportPattern() {
-  // Should fail: Not using export function
-  return <div>Test</div>
+// MyComponent.jsx
+export function MyComponent() {
+  return <div>Hello</div>
 }
 
-export function badNamingConvention() {
-  // Should fail: Not camelCase
-  return <div>Test</div>
+// MyComponent.jsx
+export default function MyComponent() {
+  return <div>Hello</div>
 }
 
-function GoodComponent() {
-  a = 5
-  // Should fail: Not camelCase (starts with capital)
-  return <div>Test</div>
+// OR
+
+function MyComponent() {
+  return <div>Hello</div>
+}
+export default MyComponent
+
+// MyComponent.jsx
+const MyComponent = () => {
+  return <div>Hello</div>
 }
 
-// Formatting issues that should fail Prettier
-export function formattingTest() {
-  GoodComponent()
-  return <div>Test</div>
-} // Should fail: No spaces
+export { MyComponent } //This is allowed.
+//export default { MyComponent }; //This is not allowed
 
-// ESLint issues
-export function eslintTest() {
-  return <div>Test</div>
-}
-
-// Good examples that should pass all checks
-export function goodComponent() {
-  // Should pass: Correct export pattern & camelCase
-  return <div>Test Component</div>
-}
-
-export function testEslintRules() {
-  const used = 'test'
-  return <div>{used}</div> // Should pass: Variable is used
-}
-
-// Test file structure
-export function fileStructureTest() {
-  return (
-    <div className="properly-formatted">
-      <h1>Test Component</h1>
-      <p>This component follows all code quality rules:</p>
-      <ul>
-        <li>Uses export function pattern</li>
-        <li>Uses camelCase naming</li>
-        <li>Properly formatted</li>
-        <li>No ESLint warnings</li>
-      </ul>
-    </div>
-  )
+function MyComponent() {
+  return <div>Hello</div>
 }
