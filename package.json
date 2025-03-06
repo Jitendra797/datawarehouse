@@ -65,17 +65,17 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@storybook/test-runner": "^0.22.0",
+    "@types/glob": "^8.1.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/glob": "^8.1.0",
     "eslint": "^9",
     "eslint-config-next": "15.1.7",
+    "glob": "^11.0.1",
     "postcss": "^8",
     "prettier": "^3.5.3",
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.0.0",
-    "glob": "^10.0.0"
+    "typescript": "^5.8.2"
   }
 }
