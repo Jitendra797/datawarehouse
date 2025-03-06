@@ -21,7 +21,6 @@ export function formattingTest() {
 
 // ESLint issues
 export function eslintTest() {
-  const unused = 'test' // Should fail: Unused variable
   return <div>Test</div>
 }
 
