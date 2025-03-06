@@ -2,7 +2,7 @@ name: Code Quality Checks
 
 on:
   push:
-    branches: [main]
+    branches: [main, tset-workflow]
   pull_request:
     branches: [main]
 
