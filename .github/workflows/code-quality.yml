@@ -77,32 +77,57 @@ jobs:
 
             files.forEach(file => {
               const content = fs.readFileSync(file, 'utf8');
-              
-              // Match useState declarations
               const stateDeclarations = content.match(/const\s+\[\w+,\s*set\w+\]\s*=\s*useState[<\w*>]*\(/g);
               
               if (stateDeclarations) {
                 stateDeclarations.forEach(declaration => {
-                  // Get content before the state declaration
                   const contentBeforeState = content.substring(0, content.indexOf(declaration));
                   const lines = contentBeforeState.split('\n');
-                  const previousLine = lines[lines.length - 1].trim();
                   
-                  // Check for comment patterns:
-                  // 1. Single line comment: // Tracks something...
-                  // 2. Multi-line comment: /* Tracks something... */
-                  const hasComment = (
-                    /\/\/\s*Tracks\s+.*/.test(previousLine) || 
-                    /\/\*\s*Tracks\s+.*\*\//.test(previousLine)
-                  );
+                  // Look for comments in previous lines
+                  let hasComment = false;
+                  let i = lines.length - 1;
                   
-                  // Extract state variable name for error message
+                  while (i >= 0) {
+                    const line = lines[i].trim();
+                    
+                    // Check for single-line comment
+                    if (line.startsWith('//')) {
+                      hasComment = true;
+                      break;
+                    }
+                    
+                    // Check for multi-line comment end
+                    if (line.includes('*/')) {
+                      while (i >= 0) {
+                        if (lines[i].trim().includes('/*')) {
+                          hasComment = true;
+                          break;
+                        }
+                        i--;
+                      }
+                      break;
+                    }
+                    
+                    // Stop if we hit non-empty, non-comment line
+                    if (line !== '' && !line.startsWith('*')) {
+                      break;
+                    }
+                    
+                    i--;
+                  }
+
                   const stateName = declaration.match(/const\s+\[(\w+)/)[1];
                   
                   if (!hasComment) {
                     console.error(
-                      `${file}: State variable '${stateName}' missing tracking comment.\n` +
-                      `Add a comment like: // Tracks <what this state tracks>`
+                      `${file}: State variable '${stateName}' missing comment.\n` +
+                      `Add either:\n` +
+                      `// Description of what this state does\n` +
+                      `or\n` +
+                      `/*\n` +
+                      ` * Description of what this state does\n` +
+                      ` */`
                     );
                     hasError = true;
                   }
