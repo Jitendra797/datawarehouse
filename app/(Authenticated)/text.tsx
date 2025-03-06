@@ -1,5 +1,5 @@
 // Bad examples that should fail checks
-export const BadExportPattern = () => {
+export function BadExportPattern() {
   // Should fail: Not using export function
   return <div>Test</div>
 }
