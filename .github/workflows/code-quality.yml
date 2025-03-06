@@ -18,27 +18,31 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
       - name: Check export patterns
         run: |
-          npm install glob
           npx ts-node -e "
             const glob = require('glob');
             const fs = require('fs');
             const files = glob.sync('app/**/*.tsx');
             let hasError = false;
+            
             files.forEach(file => {
               const content = fs.readFileSync(file, 'utf8');
-              if (content.includes('export const')) {
-                console.error(`${file} uses 'export const' instead of 'export function'`);
+              if (content.includes('export const') || 
+                  content.match(/function\s+[A-Z][a-zA-Z0-9]*/) ||
+                  !content.includes('export function')) {
+                console.error(`${file} has export pattern violations`);
                 hasError = true;
               }
             });
-            if (hasError) process.exit(1);
+            
+            if (hasError) {
+              process.exit(1);
+            }
           "
 
       - name: Run ESLint
@@ -53,16 +57,31 @@ jobs:
       - name: Check naming conventions
         run: |
           npx ts-node -e "
+            const glob = require('glob');
+            const fs = require('fs');
             const files = glob.sync('app/**/*.tsx');
+            let hasError = false;
+            
+            function isCamelCase(str) {
+              return /^[a-z][a-zA-Z0-9]*$/.test(str);
+            }
+            
             files.forEach(file => {
               const content = fs.readFileSync(file, 'utf8');
-              const exportMatches = content.match(/export function (\w+)/g);
-              if (exportMatches) {
-                exportMatches.forEach(match => {
-                   const functionName = match.replace('export function ', '');
-                   if (!/^[a-z][a-zA-Z0-9]*$/.test(functionName)) {
-                      throw new Error(`Function ${functionName} in ${file} must use camelCase`);
-                   }
+              const functionMatches = content.match(/export function ([a-zA-Z0-9]+)/g);
+              
+              if (functionMatches) {
+                functionMatches.forEach(match => {
+                  const functionName = match.replace('export function ', '');
+                  if (!isCamelCase(functionName)) {
+                    console.error(`${file}: Function ${functionName} is not camelCase`);
+                    hasError = true;
+                  }
                 });
-             }
-           });"
+              }
+            });
+            
+            if (hasError) {
+              process.exit(1);
+            }
+          "
