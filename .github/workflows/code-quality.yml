@@ -26,20 +26,13 @@ jobs:
       - name: Check export patterns
         run: |
           npx ts-node -e "
-            const fs = require('fs');
-            const path = require('path');
-            const components = process.argv[1];
-            const files = fs.readdirSync(components);
+            const files = glob.sync('app/**/*.tsx');
             files.forEach(file => {
-              if (file.endsWith('.tsx')) {
-                const content = fs.readFileSync(path.join(components, file), 'utf8');
-                if (!content.includes('export function')) {
-                  throw new Error(`${file} does not use export function pattern`);
-                }
+              const content = fs.readFileSync(file, 'utf8');
+              if (content.includes('export const') || !content.includes('export function')) {
+                throw new Error(`${file} must use 'export function' pattern`);
               }
-            });
-          " -- components/
-          " -- 'app/**/*.tsx' 'components/**/*.tsx'"
+            });"
 
       - name: Run ESLint
         run: npx eslint . --ext .ts,.tsx
@@ -48,30 +41,21 @@ jobs:
         run: npm run format
 
       - name: Check formatting
-        run: npm run format:check
+        run: npx prettier --check "app/**/*.tsx" --config .prettierrc
 
       - name: Check naming conventions
         run: |
           npx ts-node -e "
-            const fs = require('fs');
-            const path = require('path');
-            const files = fs.readdirSync('app');
-            
-            function isCamelCase(str) {
-              return /^[a-z][a-zA-Z0-9]*$/.test(str);
-            }
+            const files = glob.sync('app/**/*.tsx');
             files.forEach(file => {
-              if (file.endsWith('.tsx')) {
-                const content = fs.readFileSync(path.join('app', file), 'utf8');
-                const lines = content.split('\n');
-                lines.forEach(line => {
-                  const words = line.split(' ');
-                  words.forEach(word => {
-                    if (isCamelCase(word)) {
-                      throw new Error('Use camelCase for variable names');
-                    }
-                  });
+              const content = fs.readFileSync(file, 'utf8');
+              const exportMatches = content.match(/export function (\w+)/g);
+              if (exportMatches) {
+                exportMatches.forEach(match => {
+                   const functionName = match.replace('export function ', '');
+                   if (!/^[a-z][a-zA-Z0-9]*$/.test(functionName)) {
+                      throw new Error(`Function ${functionName} in ${file} must use camelCase`);
+                   }
                 });
-              }
-            });
-          "
+             }
+           });"
