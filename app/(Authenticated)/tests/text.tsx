@@ -1,4 +1,1 @@
-// MyComponent.jsx
-export function MyComponent() {
-  return <div>Hello</div>
-}
+const [count, setCount] = useState(0)
