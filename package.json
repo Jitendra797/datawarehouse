@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "check": "ts-node --esm scripts/check-state-comments.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx",
