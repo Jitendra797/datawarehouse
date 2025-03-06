@@ -9,13 +9,15 @@ export function badNamingConvention() {
   return <div>Test</div>
 }
 
-export function GoodComponent() {
+function GoodComponent() {
+  a = 5
   // Should fail: Not camelCase (starts with capital)
   return <div>Test</div>
 }
 
 // Formatting issues that should fail Prettier
 export function formattingTest() {
+  GoodComponent()
   return <div>Test</div>
 } // Should fail: No spaces
 
