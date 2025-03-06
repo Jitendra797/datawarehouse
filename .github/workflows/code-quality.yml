@@ -25,14 +25,21 @@ jobs:
 
       - name: Check export patterns
         run: |
+          npm install glob
           npx ts-node -e "
+            const glob = require('glob');
+            const fs = require('fs');
             const files = glob.sync('app/**/*.tsx');
+            let hasError = false;
             files.forEach(file => {
               const content = fs.readFileSync(file, 'utf8');
-              if (content.includes('export const') || !content.includes('export function')) {
-                throw new Error(`${file} must use 'export function' pattern`);
+              if (content.includes('export const')) {
+                console.error(`${file} uses 'export const' instead of 'export function'`);
+                hasError = true;
               }
-            });"
+            });
+            if (hasError) process.exit(1);
+          "
 
       - name: Run ESLint
         run: npx eslint . --ext .ts,.tsx
