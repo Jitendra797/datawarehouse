@@ -3,17 +3,10 @@
 //   return <div>Hello</div>
 // }
 
-// OR
-
-function MyComponent() {
+// MyComponent.jsx
+const MyComponent = () => {
   return <div>Hello</div>
 }
-export default MyComponent
-
-// // MyComponent.jsx
-// const MyComponent = () => {
-//   return <div>Hello</div>
-// }
 
 // export { MyComponent } //This is allowed.
 // //export default { MyComponent }; //This is not allowed
