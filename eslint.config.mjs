@@ -13,17 +13,4 @@ const eslintConfig = [
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
 ]
 
-module.exports = {
-  rules: {
-    'no-undef': 'error',
-    camelcase: 'error',
-    'react/function-component-definition': [
-      'error',
-      {
-        namedComponents: 'function-declaration',
-      },
-    ],
-  },
-}
-
 export default eslintConfig
