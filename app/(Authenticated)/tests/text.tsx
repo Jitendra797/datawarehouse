@@ -1,4 +1,2 @@
-function MyComponent() {
-  return <div>Hello</div>
-}
-export default MyComponent
+// Let us see this will work
+const [count, setCount] = useState(0)
