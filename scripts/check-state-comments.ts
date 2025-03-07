@@ -1,39 +1,66 @@
-// scripts/check-exports.ts
-import * as glob from 'glob'
-import * as fs from 'fs'
+// // scripts/check-state-comments.ts
+// const glob = require('glob')
+// const fs = require('fs')
 
-const files: string[] = glob.sync('app/**/*.tsx')
-let hasError: boolean = false
+// const files = glob.sync('app/**/*.tsx')
+// let hasError = false
 
-files.forEach((file: string) => {
-  const content: string = fs.readFileSync(file, 'utf8')
+// files.forEach((file) => {
+//   const content = fs.readFileSync(file, 'utf8')
+//   const stateDeclarations = content.match(
+//     /const\s+\[\w+,\s*set\w+\]\s*=\s*useState[<\w*>]*\(/g
+//   )
 
-  const hasArrowFunction = content.match(
-    /export\s+const\s+\w+\s*=\s*(\(\)|[\w\s,]*)\s*=>/
-  )
-  const hasNonExportedFunction = content.match(
-    /^function\s+[A-Z]\w*|const\s+[A-Z]\w*\s*=/m
-  )
-  const hasProperExport = content.match(/export\s+function\s+[A-Z]\w*\s*\(/)
+//   if (stateDeclarations) {
+//     stateDeclarations.forEach((declaration) => {
+//       const contentBeforeState = content.substring(
+//         0,
+//         content.indexOf(declaration)
+//       )
+//       const lines = contentBeforeState.split('\n')
 
-  if (hasArrowFunction) {
-    console.error(`${file}: Uses arrow function instead of 'export function'`)
-    hasError = true
-  }
+//       let hasComment = false
+//       let i = lines.length - 1
 
-  if (hasNonExportedFunction) {
-    console.error(
-      `${file}: Contains function that should use 'export function'`
-    )
-    hasError = true
-  }
+//       while (i >= 0) {
+//         const line = lines[i].trim()
 
-  if (!hasProperExport && (hasArrowFunction || hasNonExportedFunction)) {
-    console.error(`${file}: Missing proper 'export function' pattern`)
-    hasError = true
-  }
-})
+//         // Check for single-line comment
+//         if (line.startsWith('//')) {
+//           hasComment = true
+//           break
+//         }
 
-if (hasError) {
-  process.exit(1)
-}
+//         // Check for multi-line comment end
+//         if (line.includes('*/')) {
+//           while (i >= 0) {
+//             if (lines[i].trim().includes('/*')) {
+//               hasComment = true
+//               break
+//             }
+//             i--
+//           }
+//           break
+//         }
+
+//         // Stop if non-comment line found
+//         if (line !== '' && !line.startsWith('*')) {
+//           break
+//         }
+
+//         i--
+//       }
+
+//       const stateName = declaration.match(/const\s+\[(\w+)/)[1]
+
+//       if (!hasComment) {
+//         console.error(`${file}: State variable '${stateName}' missing comment.`)
+//         hasError = true
+//       }
+//     })
+//   }
+// })
+
+// if (hasError) {
+//   process.exit(1)
+// }

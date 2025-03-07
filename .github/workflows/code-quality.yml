@@ -68,7 +68,80 @@ jobs:
 
       # 2. Check State Variable Comments
       - name: Check state variable comments
-        run: npx ts-node scripts/check-state-comments.ts
+        run: |
+          npx ts-node -e "
+            const glob = require('glob');
+            const fs = require('fs');
+            const files: string[] = glob.sync('app/**/*.tsx');
+            let hasError: boolean = false;
+
+            files.forEach((file: string) => {
+              const content: string = fs.readFileSync(file, 'utf8');
+              
+              // Find all useState declarations
+              const stateDeclarations = content.match(/const\s+\[\w+,\s*set\w+\]\s*=\s*useState[<\w*>]*\(/g);
+              
+              if (stateDeclarations) {
+                stateDeclarations.forEach(declaration => {
+                  const contentBeforeState = content.substring(0, content.indexOf(declaration));
+                  const lines = contentBeforeState.split('\n');
+                  
+                  let hasComment = false;
+                  let i = lines.length - 1;
+                  
+                  // Check previous lines for comments
+                  while (i >= 0) {
+                    const line = lines[i].trim();
+                    
+                    // Check for single-line comment
+                    if (line.startsWith('//')) {
+                      hasComment = true;
+                      break;
+                    }
+                    
+                    // Check for multi-line comment end
+                    if (line.includes('*/')) {
+                      while (i >= 0) {
+                        if (lines[i].trim().includes('/*')) {
+                          hasComment = true;
+                          break;
+                        }
+                        i--;
+                      }
+                      if (hasComment) break;
+                    }
+                    
+                    // Stop if we hit non-empty, non-comment line
+                    if (line !== '' && !line.startsWith('*')) {
+                      break;
+                    }
+                    
+                    i--;
+                  }
+
+                  // Extract state variable name for error message
+                  const stateName = declaration.match(/const\s+\[(\w+)/)[1];
+                  
+                  if (!hasComment) {
+                    console.error(
+                      `${file}: State variable '${stateName}' missing comment.\n` +
+                      `Add either:\n` +
+                      `// Description of what this state does\n` +
+                      `or\n` +
+                      `/*\n` +
+                      ` * Description of what this state does\n` +
+                      ` */`
+                    );
+                    hasError = true;
+                  }
+                });
+              }
+            });
+
+            if (hasError) {
+              process.exit(1);
+            }
+          "
 
       # 3. ESLint and Prettier Checks
       - name: Install ESLint
