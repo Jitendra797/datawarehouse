@@ -1,2 +1,4 @@
-// Let us see this will work
-const [count, setCount] = useState(0)
+function MyComponent() {
+  return <div>Hello</div>
+}
+export default MyComponent
